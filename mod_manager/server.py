@@ -40,14 +40,21 @@ def get_mods():
     entries = catalog.build_catalog(installed)
     for entry in entries:
         mod_data.setdefault(entry.name, {})
-        # Do not clobber a user's manual priority edit -- only fill category/
-        # tier from the catalog, and only assign priority for mods that don't
-        # have one yet (mirrors the original "do not overwrite priority for
-        # existing mods" behavior, now applied consistently instead of only
-        # in this one file).
-        if "priority" not in mod_data[entry.name]:
-            mod_data[entry.name]["priority"] = entry.order
-            changed = True
+        # Priority is user-owned once PUT /mods/<name> below tags it
+        # priority_source="manual" -- never touch it again after that. Any
+        # other entry -- newly seeded, or a legacy one with no
+        # priority_source key at all -- is catalog-owned and kept in sync
+        # with catalog.py's current order on every read, so a corrected
+        # catalog actually takes effect instead of being frozen at
+        # whatever value was seeded before the correction (see resolver.py
+        # for the full rationale -- this mirrors its logic).
+        if mod_data[entry.name].get("priority_source") != "manual":
+            if mod_data[entry.name].get("priority") != entry.order:
+                mod_data[entry.name]["priority"] = entry.order
+                changed = True
+            if mod_data[entry.name].get("priority_source") != "catalog":
+                mod_data[entry.name]["priority_source"] = "catalog"
+                changed = True
         if mod_data[entry.name].get("category") != entry.category:
             mod_data[entry.name]["category"] = entry.category
             changed = True
@@ -86,6 +93,11 @@ def edit_mod(mod_name):
     for field in ("category", "priority", "enabled"):
         if field in data:
             mod_data[mod_name][field] = data[field]
+    if "priority" in data:
+        # A human just set this explicitly -- protect it from ever being
+        # silently resynced back to the catalog value (see get_mods() and
+        # core/resolver.py).
+        mod_data[mod_name]["priority_source"] = "manual"
     mod_data_store.save(mod_data)
     return jsonify(mod_data[mod_name])
 

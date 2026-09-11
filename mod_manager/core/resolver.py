@@ -75,13 +75,19 @@ def apply(
         return report
 
     mod_data = mod_data_store.load(mod_data_path)
-    # Snapshot which mods mod_data.json already knew about BEFORE syncing --
-    # sync_with_installed() below seeds a catalog priority for any newly
-    # installed mod itself, so by the time the loop further down runs, a
-    # brand-new mod's "priority" key is already populated. Detecting "this
-    # mod is new" via key-presence after that point would never fire; this
-    # snapshot is the only reliable signal for the report message.
-    pre_existing = set(mod_data.keys())
+    # Snapshot every catalog-owned mod's priority BEFORE anything below
+    # seeds or resyncs it -- sync_with_installed() seeds a brand-new mod's
+    # priority (and tags it priority_source="catalog") as part of its own,
+    # correct behavior, so checking for "did this change" only after that
+    # (and after this function's own resync loop) would compare a freshly
+    # -written value to itself and never detect a real change. A missing
+    # entry here (None) reliably signals "brand new mod" below, since it
+    # can never equal a real catalog.order_index() int.
+    pre_priority = {
+        name: entry.get("priority")
+        for name, entry in mod_data.items()
+        if entry.get("priority_source") != "manual"
+    }
     mod_data, changed = mod_data_store.sync_with_installed(mod_data, installed)
     report.mod_data_changed = changed
 
@@ -91,30 +97,44 @@ def apply(
     prior_state = loadorder_io.read_enabled_state(modlist_path)
     enabled = compute_enabled_state(catalog_order, mod_data, prior_state)
 
-    newly_seen = sorted(name for name in installed if name not in pre_existing)
-
+    # Priority has exactly two states, tracked by "priority_source":
+    #
+    # - "manual": a human set this explicitly through the web UI (PUT
+    #   /mods/<name>) or main.py's CLI. Permanent protection -- apply()
+    #   never touches it again, full stop.
+    # - "catalog" (the default, including for any legacy entry with no
+    #   priority_source key at all): this mod's priority is derived from
+    #   catalog.py and stays in sync with it on every run. This is the
+    #   piece that was missing before: an earlier version of this function
+    #   seeded priority once from the catalog and then never touched it
+    #   again regardless of source, which is correct for a manual override
+    #   but wrong for an auto-seeded value -- when catalog.py's order was
+    #   later corrected (2026-09-11, to match the user's real MO2 profile),
+    #   every mod that had been auto-seeded under the OLD order stayed
+    #   frozen at its old position forever, producing mixed-vintage,
+    #   sometimes duplicate/tied priority values (confirmed in production:
+    #   the web UI showed e.g. "Address Library" and "Buffout 4" both at
+    #   priority 1). Treating a missing priority_source as "catalog" rather
+    #   than "manual" is a deliberate choice, not just a convenient
+    #   default: a tied/stale priority is what auto-seeded drift looks
+    #   like, and is not a pattern a human deliberately produces by typing
+    #   a number into the web UI.
+    resynced: list[str] = []
     for name, entry in zip(catalog_order, entries):
         existing = mod_data.setdefault(name, {})
         existing["category"] = entry.category
         existing["tier"] = entry.tier
-        # Seed priority ONLY for a mod that doesn't have one yet (defensive
-        # backfill -- sync_with_installed() above already does this for the
-        # normal case). Priority is user-owned state once assigned -- set on
-        # first sight, or later overridden via the web UI (server.py's PUT
-        # /mods/<name>) or the CLI (main.py) -- and must never be reset back
-        # to its static catalog position on a routine apply(). server.py's
-        # /mods GET handler already enforced this; apply() did not, which
-        # meant any manual re-priority a user made was silently discarded
-        # the next time apply() ran (e.g. from the scheduled automation
-        # job), with no warning that it had happened.
-        if "priority" not in existing:
+        if existing.get("priority_source") != "manual":
+            if pre_priority.get(name) != entry.order:
+                resynced.append(name)
             existing["priority"] = entry.order
+            existing["priority_source"] = "catalog"
         existing["enabled"] = enabled.get(name, True)
 
-    if newly_seen:
+    if resynced:
         report.add(
-            f"Assigned catalog priority to {len(newly_seen)} newly-seen mod(s): "
-            + ", ".join(newly_seen)
+            f"Resynced catalog priority for {len(resynced)} mod(s) not manually "
+            f"overridden, to match the current catalog order: " + ", ".join(resynced)
         )
 
     # The sequence actually written to MO2 must reflect each mod's live

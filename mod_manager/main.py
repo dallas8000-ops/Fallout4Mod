@@ -77,6 +77,9 @@ def main() -> None:
                 if new_prio:
                     try:
                         mod_data[mod]["priority"] = int(new_prio)
+                        # Protect this from ever being silently resynced back
+                        # to the catalog value (see core/resolver.py).
+                        mod_data[mod]["priority_source"] = "manual"
                     except ValueError:
                         print("Invalid priority, must be an integer.")
                 mod_data_store.save(mod_data)

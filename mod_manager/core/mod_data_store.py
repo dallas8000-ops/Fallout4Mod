@@ -32,6 +32,16 @@ class ModEntry(TypedDict, total=False):
     priority: int
     enabled: bool
     tier: int
+    # "catalog" (default for anything auto-seeded) means resolver.apply()
+    # and server.py's /mods GET are free to keep this mod's priority in
+    # sync with catalog.py's current order on every run. "manual" is set
+    # the instant a human sets priority through the web UI (PUT
+    # /mods/<name>) or main.py's CLI, and is permanent protection from
+    # ever being overwritten again. An entry with no priority_source key at
+    # all predates this field -- treated as "catalog" (see resolver.py's
+    # docstring for why that's the correct default, not just the
+    # convenient one).
+    priority_source: str
 
 
 ModData = dict[str, ModEntry]
@@ -98,6 +108,7 @@ def sync_with_installed(
                 "priority": catalog.order_index(name),
                 "enabled": config.DEFAULT_ENABLED,
                 "tier": tier,
+                "priority_source": "catalog",
             }
             changed = True
         else:

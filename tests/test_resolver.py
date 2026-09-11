@@ -166,16 +166,21 @@ def test_apply_preserves_manual_priority_override(patch_config):
 
     mod_data = mod_data_store.load(config.MOD_DATA_PATH)
     assert mod_data["Buffout 4"]["priority"] == catalog.order_index("Buffout 4")
+    assert mod_data["Buffout 4"]["priority_source"] == "catalog"
 
-    # Simulate a manual re-priority via the web UI: force Buffout 4 above
-    # everything, including mods later in the static catalog order.
+    # Simulate a manual re-priority via the web UI: server.py's PUT
+    # /mods/<name> tags priority_source="manual" the instant a human sets
+    # priority -- that tag, not just the presence of a priority key, is
+    # what earns permanent protection from being resynced.
     mod_data["Buffout 4"]["priority"] = 999999
+    mod_data["Buffout 4"]["priority_source"] = "manual"
     mod_data_store.save(mod_data, config.MOD_DATA_PATH)
 
     resolver.apply(dry_run=False)  # second run must NOT reset it
 
     mod_data = mod_data_store.load(config.MOD_DATA_PATH)
     assert mod_data["Buffout 4"]["priority"] == 999999
+    assert mod_data["Buffout 4"]["priority_source"] == "manual"
 
     # And it must actually take effect in the written modlist.txt, not just
     # sit unused in mod_data.json -- highest priority is written first.
@@ -202,3 +207,34 @@ def test_apply_still_seeds_priority_for_a_newly_added_mod(patch_config):
     assert mod_data["Unofficial Fallout 4 Patch"]["priority"] == catalog.order_index(
         "Unofficial Fallout 4 Patch"
     )
+
+
+def test_apply_resyncs_stale_catalog_priority_when_not_manually_set(patch_config):
+    # Regression test for the exact bug the priority_source model exists to
+    # prevent: confirmed in production, a web UI screenshot showed two
+    # unrelated mods (Address Library, Buffout 4) sharing priority 1 --
+    # stale, mixed-vintage auto-seeded values left behind after catalog.py's
+    # order was corrected (2026-09-11) to match the user's real MO2 profile.
+    # A priority that was never manually set must track the catalog, not
+    # freeze at whatever value happened to be seeded before a correction.
+    make_mod_folder(patch_config.mods, "Buffout 4")
+    resolver.apply(dry_run=False)
+
+    mod_data = mod_data_store.load(config.MOD_DATA_PATH)
+    correct_priority = mod_data["Buffout 4"]["priority"]
+    assert mod_data["Buffout 4"]["priority_source"] == "catalog"
+
+    # Simulate the exact production scenario: a stale priority sitting in
+    # mod_data.json with nothing to indicate a human ever set it (e.g. it
+    # predates the priority_source field, or catalog.py's order has since
+    # been corrected).
+    mod_data["Buffout 4"]["priority"] = correct_priority + 500
+    del mod_data["Buffout 4"]["priority_source"]
+    mod_data_store.save(mod_data, config.MOD_DATA_PATH)
+
+    report = resolver.apply(dry_run=False)
+
+    mod_data = mod_data_store.load(config.MOD_DATA_PATH)
+    assert mod_data["Buffout 4"]["priority"] == correct_priority
+    assert mod_data["Buffout 4"]["priority_source"] == "catalog"
+    assert any("Resynced catalog priority" in n and "Buffout 4" in n for n in report.notes)

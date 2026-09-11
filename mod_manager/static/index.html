@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MO2 Mod Manager</title>
+    <style>
+        body { background: #222; color: #eee; font-family: Arial, sans-serif; }
+        table { border-collapse: collapse; width: 80%; margin: 2em auto; background: #333; }
+        th, td { border: 1px solid #444; padding: 0.5em 1em; text-align: left; }
+        th { background: #444; }
+        tr:nth-child(even) { background: #2a2a2a; }
+        button { background: #444; color: #eee; border: none; padding: 0.3em 0.7em; cursor: pointer; }
+        button:hover { background: #666; }
+        input[type="text"], input[type="number"] { background: #222; color: #eee; border: 1px solid #555; padding: 0.2em 0.5em; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center">MO2 Mod Manager</h1>
+    <div id="mod-table"></div>
+    <script>
+        function fetchMods() {
+            fetch('/mods').then(r => r.json()).then(data => {
+                    let mods = Object.entries(data);
+                    mods.sort((a, b) => {
+                        let pa = a[1].priority, pb = b[1].priority;
+                        if (pa !== pb) return pa - pb;
+                        return a[0].localeCompare(b[0]);
+                    });
+                    let html = '<button onclick="saveLoadOrder()" style="margin-bottom:1em">Save Load Order to MO2</button>';
+                    html += '<table><tr><th>Mod Name</th><th>Category</th><th>Tier</th><th>Priority</th><th>Enabled</th><th>Actions</th></tr>';
+                    for (const [mod, info] of mods) {
+                        html += `<tr>
+                            <td>${mod}</td>
+                            <td><input type="text" value="${info.category}" id="cat-${mod}"></td>
+                            <td>${typeof info.tier !== 'undefined' ? info.tier : ''}</td>
+                            <td><input type="number" value="${info.priority}" id="prio-${mod}" style="width:60px"></td>
+                            <td><input type="checkbox" id="en-${mod}" ${info.enabled ? 'checked' : ''}></td>
+                            <td>
+                                <button onclick="saveMod('${mod}')">Save</button>
+                                <button onclick="toggleMod('${mod}')">Toggle</button>
+                            </td>
+                        </tr>`;
+                }
+                html += '</table>';
+                document.getElementById('mod-table').innerHTML = html;
+            });
+        }
+        function saveMod(mod) {
+            const cat = document.getElementById('cat-' + mod).value;
+            const prio = parseInt(document.getElementById('prio-' + mod).value);
+            const en = document.getElementById('en-' + mod).checked;
+            fetch(`/mods/${encodeURIComponent(mod)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category: cat, priority: prio, enabled: en })
+            }).then(fetchMods);
+        }
+        function toggleMod(mod) {
+            fetch(`/mods/${encodeURIComponent(mod)}/toggle`, { method: 'POST' }).then(fetchMods);
+        }
+        window.onload = fetchMods;
+    </script>
+    </script>
+    <script src="save.js"></script>
+</body>
+</html>

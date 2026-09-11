@@ -1,0 +1,566 @@
+{
+  "1. SR-25 - Main CN": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 71,
+    "tier": 10
+  },
+  "155mm Howitzer M1 4K New": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 73,
+    "tier": 10
+  },
+  "2. Glock family - Main NO TR": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 74,
+    "tier": 12
+  },
+  "AAF - The One Patch to Bang Them All": {
+    "category": "Animation Frameworks",
+    "enabled": true,
+    "priority": 46,
+    "tier": 5
+  },
+  "AAF Vanilla-Kinky-Creatures Sex Animation Themes": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 34,
+    "tier": 7
+  },
+  "AAF_FamilyPlanningEnhanced_": {
+    "category": "Animation Frameworks",
+    "enabled": true,
+    "priority": 28,
+    "tier": 5
+  },
+  "AAF_SCRS": {
+    "category": "Animation Frameworks",
+    "enabled": true,
+    "priority": 30,
+    "tier": 5
+  },
+  "AAF_SEU_V": {
+    "category": "Animation Frameworks",
+    "enabled": true,
+    "priority": 29,
+    "tier": 5
+  },
+  "ADDON_Body_Textures_With_Detailed_Vagina": {
+    "category": "Body & Physics Foundation",
+    "enabled": true,
+    "priority": 14,
+    "tier": 3
+  },
+  "AS Vektor Commonwealth Version": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 60,
+    "tier": 10
+  },
+  "Accuracy International AX50": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 64,
+    "tier": 10
+  },
+  "Address Library - All In One": {
+    "category": "Core Fixes & Frameworks",
+    "enabled": true,
+    "priority": 0,
+    "tier": 2
+  },
+  "Advanced Animation Framework": {
+    "category": "Animation Frameworks",
+    "enabled": true,
+    "priority": 26,
+    "tier": 5
+  },
+  "Animated_Fannies__": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 37,
+    "tier": 7
+  },
+  "Atomic Lust": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 33,
+    "tier": 7
+  },
+  "Atomic Muscle": {
+    "category": "World / NPC Mods",
+    "enabled": true,
+    "priority": 5,
+    "tier": 8
+  },
+  "BP70 Fallout 4 Sex Animations 2.3": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 39,
+    "tier": 7
+  },
+  "Beautiful Female Enemies V. 2.0": {
+    "category": "Appearance / NPC Overhauls",
+    "enabled": true,
+    "priority": 19,
+    "tier": 4
+  },
+  "Beautiful Female Settlers": {
+    "category": "Appearance / NPC Overhauls",
+    "enabled": true,
+    "priority": 18,
+    "tier": 4
+  },
+  "Better Generators (x3)": {
+    "category": "Settlements & World Edits",
+    "enabled": true,
+    "priority": 92,
+    "tier": 11
+  },
+  "Black Road Leathers": {
+    "category": "Clothing & Armor",
+    "enabled": true,
+    "priority": 53,
+    "tier": 9
+  },
+  "Black and Red Vaultsuit_FULL_Male and Female": {
+    "category": "Clothing & Armor",
+    "enabled": true,
+    "priority": 52,
+    "tier": 9
+  },
+  "BodySlide and Outfit Studio -": {
+    "category": "Core Fixes & Frameworks",
+    "enabled": true,
+    "priority": 7,
+    "tier": 2
+  },
+  "BodyTalk": {
+    "category": "Body Talk & Physics Actors",
+    "enabled": true,
+    "priority": 15,
+    "tier": 6
+  },
+  "BodyTriangleEnhancer": {
+    "category": "Appearance / NPC Overhauls",
+    "enabled": true,
+    "priority": 17,
+    "tier": 4
+  },
+  "Bolt Actions of the Wasteland": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 68,
+    "tier": 10
+  },
+  "Buffout 4": {
+    "category": "Body Talk & Physics Actors",
+    "enabled": true,
+    "priority": 1,
+    "tier": 6
+  },
+  "CALIBER-COMPLEX": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 59,
+    "tier": 10
+  },
+  "Caliente's Beautiful Bodies Enhancer -CBBE-": {
+    "category": "Body & Physics Foundation",
+    "enabled": true,
+    "priority": 8,
+    "tier": 3
+  },
+  "Clean My Settlement Redux - NextGen REBUILT": {
+    "category": "Settlements & World Edits",
+    "enabled": true,
+    "priority": 89,
+    "tier": 11
+  },
+  "Combined Arms - 1.0": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 63,
+    "tier": 10
+  },
+  "Commonwealth Moisturizer": {
+    "category": "World / NPC Mods",
+    "enabled": true,
+    "priority": 47,
+    "tier": 8
+  },
+  "Cronen Squall - Main": {
+    "category": "Clothing & Armor",
+    "enabled": true,
+    "priority": 54,
+    "tier": 9
+  },
+  "Crossbows of the Commonwealth 1.4": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 83,
+    "tier": 12
+  },
+  "CumOverlays v": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 43,
+    "tier": 7
+  },
+  "Dak's Throwables": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 84,
+    "tier": 12
+  },
+  "Deployable Turret Pack 2": {
+    "category": "Settlements & World Edits",
+    "enabled": true,
+    "priority": 94,
+    "tier": 11
+  },
+  "Desert Eagle": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 76,
+    "tier": 12
+  },
+  "Desert Eagle Silencer 1.4": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 77,
+    "tier": 12
+  },
+  "Dynamic Cumshots": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 42,
+    "tier": 7
+  },
+  "Explosives Expanded": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 85,
+    "tier": 12
+  },
+  "FACTOR ENG (FULL)": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 72,
+    "tier": 10
+  },
+  "FN P90": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 67,
+    "tier": 10
+  },
+  "FO4 Animations by Leito": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 36,
+    "tier": 7
+  },
+  "File C - HN66_SiriusArmor_3.20_Main mod files": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 57,
+    "tier": 12
+  },
+  "Four-Play Animations by Crazy6987": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 35,
+    "tier": 7
+  },
+  "Fusion City Rising v.1.0": {
+    "category": "Settlements & World Edits",
+    "enabled": true,
+    "priority": 90,
+    "tier": 11
+  },
+  "Generator Fixerupper": {
+    "category": "Settlements & World Edits",
+    "enabled": true,
+    "priority": 91,
+    "tier": 11
+  },
+  "HK G11 K2": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 69,
+    "tier": 10
+  },
+  "High Res DLC Black Face Fix": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 3,
+    "tier": 12
+  },
+  "Hookers of the Commonwealth (HotC) - v.0.99h": {
+    "category": "World / NPC Mods",
+    "enabled": true,
+    "priority": 50,
+    "tier": 8
+  },
+  "JensenArmor": {
+    "category": "Clothing & Armor",
+    "enabled": true,
+    "priority": 55,
+    "tier": 9
+  },
+  "Kendall Ballistics Karma": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 80,
+    "tier": 12
+  },
+  "LLFP": {
+    "category": "World / NPC Mods",
+    "enabled": true,
+    "priority": 48,
+    "tier": 8
+  },
+  "Looks Menu Customization Compendium": {
+    "category": "Appearance / NPC Overhauls",
+    "enabled": true,
+    "priority": 24,
+    "tier": 4
+  },
+  "LooksMenu v1-7-0-3": {
+    "category": "Appearance / NPC Overhauls",
+    "enabled": true,
+    "priority": 25,
+    "tier": 4
+  },
+  "Lots More Female Hairstyles v. 1.33": {
+    "category": "Appearance / NPC Overhauls",
+    "enabled": true,
+    "priority": 22,
+    "tier": 4
+  },
+  "Lots More Male Hairstyles v. 1.21 - Fix": {
+    "category": "Appearance / NPC Overhauls",
+    "enabled": true,
+    "priority": 21,
+    "tier": 4
+  },
+  "MG42": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 66,
+    "tier": 10
+  },
+  "MTM 3B OCBP - OCBPC Physics and Collision Preset": {
+    "category": "Body & Physics Foundation",
+    "enabled": true,
+    "priority": 10,
+    "tier": 3
+  },
+  "Mk 23 SOCOM - 1.0 - MAIN": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 70,
+    "tier": 10
+  },
+  "Mod Configuration Menu 1.11.221": {
+    "category": "Core Fixes & Frameworks",
+    "enabled": true,
+    "priority": 4,
+    "tier": 2
+  },
+  "Muscular Body": {
+    "category": "Body & Physics Foundation",
+    "enabled": true,
+    "priority": 13,
+    "tier": 3
+  },
+  "MyCleanRaiders_CBBE1.0": {
+    "category": "Appearance / NPC Overhauls",
+    "enabled": true,
+    "priority": 20,
+    "tier": 4
+  },
+  "NanoSuit": {
+    "category": "Clothing & Armor",
+    "enabled": true,
+    "priority": 51,
+    "tier": 9
+  },
+  "Nude Male Cut Erect": {
+    "category": "World / NPC Mods",
+    "enabled": true,
+    "priority": 49,
+    "tier": 8
+  },
+  "Patch for animations (SquirtCum Effects, cum overlays, stages, fixes) 11.0": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 45,
+    "tier": 7
+  },
+  "Ponytail Hairstyles by Azar - BA2": {
+    "category": "Appearance / NPC Overhauls",
+    "enabled": true,
+    "priority": 23,
+    "tier": 4
+  },
+  "R8 Revolver 4K": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 78,
+    "tier": 12
+  },
+  "RU556 - Assault Rifle": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 61,
+    "tier": 10
+  },
+  "RZF4S_": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 41,
+    "tier": 7
+  },
+  "Ranger Sequoia Replacer 1.1": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 82,
+    "tier": 12
+  },
+  "RealVagCBBE": {
+    "category": "Body & Physics Foundation",
+    "enabled": true,
+    "priority": 12,
+    "tier": 3
+  },
+  "Remington 700": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 79,
+    "tier": 12
+  },
+  "Remote Explosives - Standard ESP": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 86,
+    "tier": 12
+  },
+  "SAM Enhanced Animations": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 40,
+    "tier": 7
+  },
+  "Sam BodySlide Output": {
+    "category": "Body & Physics Foundation",
+    "enabled": true,
+    "priority": 9,
+    "tier": 3
+  },
+  "SavageCabbages Animation Pack": {
+    "category": "Adult Content & Animation Packs",
+    "enabled": true,
+    "priority": 38,
+    "tier": 7
+  },
+  "Scar Family - Main NO TR": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 75,
+    "tier": 12
+  },
+  "Scrap scrap 1.1": {
+    "category": "Settlements & World Edits",
+    "enabled": true,
+    "priority": 95,
+    "tier": 11
+  },
+  "SexAttributes": {
+    "category": "Animation Frameworks",
+    "enabled": true,
+    "priority": 27,
+    "tier": 5
+  },
+  "Smith and Wesson 500- REDUX beta": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 62,
+    "tier": 10
+  },
+  "Special Rings": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 87,
+    "tier": 10
+  },
+  "Stahl Arms STA-20 10mm Pistol": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 81,
+    "tier": 12
+  },
+  "Stealth Glasses": {
+    "category": "Clothing & Armor",
+    "enabled": true,
+    "priority": 56,
+    "tier": 9
+  },
+  "Tactical Reload Framework": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 58,
+    "tier": 10
+  },
+  "Tavor X95": {
+    "category": "Weapons",
+    "enabled": true,
+    "priority": 65,
+    "tier": 10
+  },
+  "Toned and Shapely Body for CBBE and 3BA Vagina Add-on": {
+    "category": "Body & Physics Foundation",
+    "enabled": true,
+    "priority": 11,
+    "tier": 3
+  },
+  "Ultimate AAF Patch": {
+    "category": "Animation Frameworks",
+    "enabled": true,
+    "priority": 32,
+    "tier": 5
+  },
+  "Unofficial Fallout 4 Patch": {
+    "category": "Core Fixes & Frameworks",
+    "enabled": true,
+    "priority": 2,
+    "tier": 2
+  },
+  "Very Small Generators (1000)": {
+    "category": "Settlements & World Edits",
+    "enabled": true,
+    "priority": 93,
+    "tier": 11
+  },
+  "Weapons Level List Patches": {
+    "category": "Other",
+    "enabled": true,
+    "priority": 88,
+    "tier": 12
+  },
+  "Younger Male Face Texture": {
+    "category": "Appearance / NPC Overhauls",
+    "enabled": true,
+    "priority": 16,
+    "tier": 4
+  },
+  "ZeX - ZaZ Extended Skeleton": {
+    "category": "Core Fixes & Frameworks",
+    "enabled": true,
+    "priority": 6,
+    "tier": 2
+  }
+}

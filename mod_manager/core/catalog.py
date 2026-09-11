@@ -8,8 +8,34 @@ typo'd mod name here silently drops a mod to the back of the load order
 with no error, which is the exact failure class this file exists to end.
 
 Provenance:
-- ORDER_LOW_TO_HIGH: apply_optimal_load_order.py's list, verified byte-for-byte
-  identical (as a set) to align_mods_compatibility.py's list. 100 entries.
+- ORDER_LOW_TO_HIGH: REORDERED 2026-09-11 against the user's actual, live
+  MO2 modlist.txt (Fallout 4 - Mod Organizer v2.5.2, profile "Default"),
+  screenshotted directly from MO2's own Priority column -- ground truth,
+  not a guess. The previous version of this list (originally sourced from
+  apply_optimal_load_order.py / align_mods_compatibility.py, "100 entries")
+  disagreed with that real, working load order in several confirmed spots,
+  most notably: Atomic Muscle, High Res DLC Black Face Fix, and Ultimate
+  AAF Patch were all placed much later (higher priority) than the real
+  profile has them; Weapons Level List Patches was placed dead last
+  (would win every conflict) when the real profile has it BEFORE the
+  settlement/generator group; and the three mods DISABLE_IF_PRESENT treats
+  as disabled legacy duplicates (Address Library, Mod Configuration Menu
+  1.43, LooksMenu v1-7-0-2) all sit parked at the very end of the real
+  profile -- consistent with them being kept installed-but-disabled, and
+  strong independent confirmation that this reorder is right rather than a
+  misread of the screenshot. Every one of the previous 100 entries is still
+  present (verified by set-equality against the prior list, nothing added
+  or dropped) -- only the sequence changed. Two entries (Mod Configuration
+  Menu 1.43 vs 1.11.221, and LooksMenu v1-7-0-2 vs v1-7-0-3 at the tail of
+  the real profile) were partially obscured in the screenshot; inferred by
+  elimination since the sibling version of each pair already appears
+  earlier in the confirmed order. Four mods not visible in the
+  screenshot's managed-mod section at all (presumably not currently
+  installed) -- Buffout 4, Extended AAF Patch, AAF patches for Leito and
+  Crazy animations, Sanctuary Estates -- were kept at their previous
+  relative position next to the same neighboring mod, since there is no
+  new evidence for where they belong. Confirm the two inferred names and
+  the four kept-in-place ones if this doesn't match your actual setup.
 - CATEGORY / TIER assignment: server.py's tier_names/tier_mods table, verified
   to reproduce the live mod_manager/mod_data.json category for all 96
   currently-installed mods with zero mismatches. apply_optimal_load_order.py's
@@ -35,26 +61,23 @@ from functools import lru_cache
 # ---------------------------------------------------------------------------
 ORDER_LOW_TO_HIGH: list[str] = [
     'Address Library - All In One',
-    'Address Library',
     'Buffout 4',
     'Unofficial Fallout 4 Patch',
+    'High Res DLC Black Face Fix',
     'Mod Configuration Menu 1.11.221',
-    'Mod Configuration Menu 1.43',
-    'Advanced Animation Framework',
+    'Atomic Muscle',
     'ZeX - ZaZ Extended Skeleton',
     'BodySlide and Outfit Studio -',
     "Caliente's Beautiful Bodies Enhancer -CBBE-",
-    'BodyTalk',
-    'Atomic Muscle',
     'Sam BodySlide Output',
     'MTM 3B OCBP - OCBPC Physics and Collision Preset',
     'Toned and Shapely Body for CBBE and 3BA Vagina Add-on',
     'RealVagCBBE',
     'Muscular Body',
     'ADDON_Body_Textures_With_Detailed_Vagina',
+    'BodyTalk',
     'Younger Male Face Texture',
     'BodyTriangleEnhancer',
-    'High Res DLC Black Face Fix',
     'Beautiful Female Settlers',
     'Beautiful Female Enemies V. 2.0',
     'MyCleanRaiders_CBBE1.0',
@@ -63,12 +86,14 @@ ORDER_LOW_TO_HIGH: list[str] = [
     'Ponytail Hairstyles by Azar - BA2',
     'Looks Menu Customization Compendium',
     'LooksMenu v1-7-0-3',
-    'LooksMenu v1-7-0-2',
+    'Advanced Animation Framework',
     'SexAttributes',
     'AAF_FamilyPlanningEnhanced_',
     'AAF_SEU_V',
     'AAF_SCRS',
-    'AAF - The One Patch to Bang Them All',
+    'Extended AAF Patch',
+    'Ultimate AAF Patch',
+    'AAF patches for Leito and Crazy animations',
     'Atomic Lust',
     'AAF Vanilla-Kinky-Creatures Sex Animation Themes',
     'Four-Play Animations by Crazy6987',
@@ -81,9 +106,7 @@ ORDER_LOW_TO_HIGH: list[str] = [
     'Dynamic Cumshots',
     'CumOverlays v',
     'Patch for animations (SquirtCum Effects, cum overlays, stages, fixes) 11.0',
-    'Extended AAF Patch',
-    'Ultimate AAF Patch',
-    'AAF patches for Leito and Crazy animations',
+    'AAF - The One Patch to Bang Them All',
     'Commonwealth Moisturizer',
     'LLFP',
     'Nude Male Cut Erect',
@@ -125,6 +148,7 @@ ORDER_LOW_TO_HIGH: list[str] = [
     'Explosives Expanded',
     'Remote Explosives - Standard ESP',
     'Special Rings',
+    'Weapons Level List Patches',
     'Clean My Settlement Redux - NextGen REBUILT',
     'Sanctuary Estates',
     'Fusion City Rising v.1.0',
@@ -133,7 +157,9 @@ ORDER_LOW_TO_HIGH: list[str] = [
     'Very Small Generators (1000)',
     'Deployable Turret Pack 2',
     'Scrap scrap 1.1',
-    'Weapons Level List Patches',
+    'Address Library',
+    'Mod Configuration Menu 1.43',
+    'LooksMenu v1-7-0-2',
 ]
 
 _ORDER_INDEX: dict[str, int] = {name: i for i, name in enumerate(ORDER_LOW_TO_HIGH)}

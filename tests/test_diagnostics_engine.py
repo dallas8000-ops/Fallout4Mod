@@ -1,0 +1,225 @@
+from helpers import build_esp_bytes, make_mod_folder
+
+from mod_manager.core import mod_data_store
+from mod_manager.diagnostics.engine import diagnose
+from mod_manager.diagnostics.rules import Action, Confidence
+from mod_manager.diagnostics.symptoms import Symptom
+
+
+def _write_plugins_txt(path, entries: list[tuple[str, bool]]):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [("*" if active else "") + name for name, active in entries]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def test_missing_master_detected_for_ctd_on_launch(patch_config):
+    make_mod_folder(
+        patch_config.mods,
+        "Some Quest Mod",
+        {"Some Quest Mod.esp": build_esp_bytes(["Fallout4.esm", "MissingMaster.esm"])},
+    )
+    _write_plugins_txt(patch_config.plugins, [("Some Quest Mod.esp", True)])
+
+    result = diagnose(Symptom.CTD_ON_LAUNCH)
+
+    titles = [f.title for f in result.findings]
+    assert any("requires a master that isn't installed" in t for t in titles)
+    missing_finding = next(f for f in result.findings if "requires a master" in f.title and "isn't installed" in f.title)
+    assert missing_finding.confidence == Confidence.HIGH
+    assert any("MissingMaster.esm" in e for e in missing_finding.evidence)
+
+
+def test_inactive_master_detected(patch_config):
+    make_mod_folder(
+        patch_config.mods,
+        "Some Quest Mod",
+        {"Some Quest Mod.esp": build_esp_bytes(["Fallout4.esm", "DLCRobot.esm"])},
+    )
+    _write_plugins_txt(
+        patch_config.plugins,
+        [("Some Quest Mod.esp", True), ("DLCRobot.esm", False)],  # present, not active
+    )
+
+    result = diagnose(Symptom.CTD_ON_LAUNCH)
+    titles = [f.title for f in result.findings]
+    assert any("installed but not active" in t for t in titles)
+
+
+def test_clean_install_only_has_the_classic_pointer(patch_config):
+    # CTD symptoms always end with a low-confidence pointer at CLASSIC (see
+    # rules.py's _classic_recommendation) -- it's a "go check this too" note,
+    # not a detected problem, so a clean install still surfaces exactly one
+    # LOW-confidence finding rather than zero.
+    make_mod_folder(
+        patch_config.mods,
+        "Some Quest Mod",
+        {"Some Quest Mod.esp": build_esp_bytes(["Fallout4.esm"])},
+    )
+    _write_plugins_txt(patch_config.plugins, [("Some Quest Mod.esp", True), ("Fallout4.esm", True)])
+
+    result = diagnose(Symptom.CTD_ON_LAUNCH)
+    assert len(result.findings) == 1
+    assert result.findings[0].title == "Run CLASSIC for full crash-log analysis"
+    assert result.findings[0].confidence == Confidence.LOW
+
+
+def test_clean_ctd_ingame_only_has_the_classic_pointer(patch_config):
+    make_mod_folder(
+        patch_config.mods,
+        "Some Quest Mod",
+        {"Some Quest Mod.esp": build_esp_bytes(["Fallout4.esm"])},
+    )
+    _write_plugins_txt(patch_config.plugins, [("Some Quest Mod.esp", True), ("Fallout4.esm", True)])
+
+    result = diagnose(Symptom.CTD_INGAME)
+    assert len(result.findings) == 1
+    assert result.findings[0].title == "Run CLASSIC for full crash-log analysis"
+
+
+def test_ctd_ingame_flags_use_signatures_true(patch_config):
+    make_mod_folder(
+        patch_config.mods,
+        "Advanced Animation Framework",
+        {"xmlutility.ini": b"[Settings]\nUseSignatures=true\n"},
+    )
+
+    result = diagnose(Symptom.CTD_INGAME)
+    titles = [f.title for f in result.findings]
+    assert any("UseSignatures=true" in t for t in titles)
+    finding = next(f for f in result.findings if "UseSignatures=true" in f.title)
+    assert finding.confidence == Confidence.HIGH
+    assert finding.action == Action.APPLY_RESOLUTION_POLICY
+
+
+def test_ctd_ingame_flags_zero_byte_aaf_xml(patch_config):
+    make_mod_folder(
+        patch_config.mods,
+        "Atomic Lust",
+        {"AAF/Atomic Lust_mfgSetData.xml": b""},
+    )
+
+    result = diagnose(Symptom.CTD_INGAME)
+    titles = [f.title for f in result.findings]
+    assert any("0 bytes on disk" in t for t in titles)
+
+
+def test_ctd_ingame_flags_missing_aaf_schema(patch_config):
+    make_mod_folder(patch_config.mods, "Advanced Animation Framework", {})
+
+    result = diagnose(Symptom.CTD_INGAME)
+    titles = [f.title for f in result.findings]
+    assert any("aaf.xsd" in t for t in titles)
+
+
+def test_ctd_ingame_flags_real_multi_owner_collision(patch_config):
+    # Reproduces the confirmed real-world scenario from the AAF crash
+    # investigation: two mods both ship the same AAF content path.
+    make_mod_folder(
+        patch_config.mods,
+        "Atomic Lust",
+        {"AAF/Atomic Lust_mfgSetData.xml": b"<data>real</data>"},
+    )
+    make_mod_folder(
+        patch_config.mods,
+        "Some Unrelated Patch",
+        {"AAF/Atomic Lust_mfgSetData.xml": b""},
+    )
+    patch_config.modlist.parent.mkdir(parents=True, exist_ok=True)
+    patch_config.modlist.write_text(
+        "# This file was automatically generated by Mod Organizer.\n"
+        "+Some Unrelated Patch\n"
+        "+Atomic Lust\n",
+        encoding="utf-8",
+    )
+
+    result = diagnose(Symptom.CTD_INGAME)
+    titles = [f.title for f in result.findings]
+    assert any("load-order collision" in t and "Atomic Lust_mfgSetData.xml" in t for t in titles)
+    finding = next(f for f in result.findings if "load-order collision" in f.title)
+    assert finding.action == Action.MANUAL
+    assert any("Some Unrelated Patch" in e for e in finding.evidence)
+
+
+def test_tpose_symptom_names_actual_skeleton_winner(patch_config):
+    make_mod_folder(
+        patch_config.mods,
+        "Atomic Muscle",
+        {"Meshes/Actors/Character/CharacterAssets/skeleton.nif": b"AM"},
+    )
+    make_mod_folder(
+        patch_config.mods,
+        "ZeX - ZaZ Extended Skeleton",
+        {"Meshes/Actors/Character/CharacterAssets/skeleton.nif": b"ZEX"},
+    )
+    # modlist.txt: Atomic Muscle listed ABOVE (wins) ZeX -- the bug scenario
+    patch_config.modlist.parent.mkdir(parents=True, exist_ok=True)
+    patch_config.modlist.write_text(
+        "# This file was automatically generated by Mod Organizer.\n"
+        "+Atomic Muscle\n"
+        "+ZeX - ZaZ Extended Skeleton\n",
+        encoding="utf-8",
+    )
+    mod_data_store.save(
+        {"Atomic Muscle": {"enabled": True}, "ZeX - ZaZ Extended Skeleton": {"enabled": True}},
+        patch_config.mod_data,
+    )
+
+    result = diagnose(Symptom.ANIMATION_TPOSE)
+    winner_finding = next(f for f in result.findings if "is winning the human skeleton file" in f.title)
+    assert "Atomic Muscle" in winner_finding.title
+    assert winner_finding.action == Action.APPLY_RESOLUTION_POLICY
+
+
+def test_animation_misalign_detects_unpatched_squirtcum(patch_config):
+    make_mod_folder(
+        patch_config.mods,
+        "Patch for animations (SquirtCum Effects, cum overlays, stages, fixes) 11.0",
+        {"AAF/Atomic Lust_positionData.xml": b'<data offset="0,50,180"/>'},
+    )
+    result = diagnose(Symptom.ANIMATION_MISALIGN)
+    assert any("offset" in f.title for f in result.findings)
+    assert all(f.action == Action.APPLY_RESOLUTION_POLICY for f in result.findings if "offset" in f.title)
+
+
+def test_content_missing_flags_inactive_plugin_from_enabled_mod(patch_config):
+    make_mod_folder(
+        patch_config.mods,
+        "Cool Weapon Mod",
+        {"CoolWeapon.esp": build_esp_bytes(["Fallout4.esm"])},
+    )
+    _write_plugins_txt(patch_config.plugins, [("CoolWeapon.esp", False), ("Fallout4.esm", True)])
+    mod_data_store.save({"Cool Weapon Mod": {"enabled": True}}, patch_config.mod_data)
+
+    result = diagnose(Symptom.CONTENT_MISSING_INGAME)
+    assert any("inactive even though its mod is enabled" in f.title for f in result.findings)
+
+
+def test_load_hang_flags_plugin_count_over_limit(patch_config):
+    entries = [(f"Plugin{i}.esp", True) for i in range(260)]
+    _write_plugins_txt(patch_config.plugins, entries)
+
+    result = diagnose(Symptom.LOAD_HANG)
+    assert any("exceeds Fallout 4" in f.title for f in result.findings)
+
+
+def test_findings_are_ranked_high_before_low(patch_config):
+    make_mod_folder(
+        patch_config.mods,
+        "Some Quest Mod",
+        {"Some Quest Mod.esp": build_esp_bytes(["Fallout4.esm", "MissingMaster.esm"])},
+    )
+    _write_plugins_txt(patch_config.plugins, [("Some Quest Mod.esp", True)])
+    make_mod_folder(patch_config.mods, "Address Library")
+    make_mod_folder(patch_config.mods, "Address Library - All In One")
+    mod_data_store.save(
+        {
+            "Address Library": {"enabled": True},
+            "Address Library - All In One": {"enabled": True},
+        },
+        patch_config.mod_data,
+    )
+
+    result = diagnose(Symptom.CTD_ON_LAUNCH)
+    confidences = [f.confidence for f in result.findings]
+    order = {Confidence.HIGH: 0, Confidence.MEDIUM: 1, Confidence.LOW: 2}
+    assert confidences == sorted(confidences, key=lambda c: order[c])

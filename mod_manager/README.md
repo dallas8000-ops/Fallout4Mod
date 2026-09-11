@@ -35,6 +35,29 @@ vulnerability, not just noise):
 python server.py
 ```
 
+## Sequencing / conflict resolution
+
+```
+python -m mod_manager.apply_load_order            # dry run: report only
+python -m mod_manager.apply_load_order --apply    # write modlist.txt + mod_data.json, run the resolution policy
+```
+
+Sorts every installed mod into the canonical, conflict-avoiding sequence
+(`core/catalog.py`'s `ORDER_LOW_TO_HIGH`) and runs the current resolution
+policy (`core/resolution_policy.py`). A mod's priority, once assigned, is
+user-owned state -- re-running this never resets a priority you (or the
+web UI) already set; it only assigns one to a mod that's genuinely new
+since the last run, and the report tells you exactly which mod(s) that
+was. Safe to run repeatedly: with nothing new installed, it reports zero
+resequenced mods and every resolution-policy action is independently
+idempotent (see `core/actions.py`). This is what the weekly scheduled
+maintenance job runs before the test suite.
+
+Separate from `diagnostics/cli.py`'s `report --apply` below, which only
+triggers the resolution policy as one fix among several for a diagnosed
+symptom you have to name first -- use `apply_load_order` for routine,
+no-symptom-needed maintenance instead.
+
 ## Diagnostics
 
 ```

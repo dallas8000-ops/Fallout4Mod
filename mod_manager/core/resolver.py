@@ -75,6 +75,13 @@ def apply(
         return report
 
     mod_data = mod_data_store.load(mod_data_path)
+    # Snapshot which mods mod_data.json already knew about BEFORE syncing --
+    # sync_with_installed() below seeds a catalog priority for any newly
+    # installed mod itself, so by the time the loop further down runs, a
+    # brand-new mod's "priority" key is already populated. Detecting "this
+    # mod is new" via key-presence after that point would never fire; this
+    # snapshot is the only reliable signal for the report message.
+    pre_existing = set(mod_data.keys())
     mod_data, changed = mod_data_store.sync_with_installed(mod_data, installed)
     report.mod_data_changed = changed
 
@@ -84,29 +91,30 @@ def apply(
     prior_state = loadorder_io.read_enabled_state(modlist_path)
     enabled = compute_enabled_state(catalog_order, mod_data, prior_state)
 
-    seeded: list[str] = []
+    newly_seen = sorted(name for name in installed if name not in pre_existing)
+
     for name, entry in zip(catalog_order, entries):
         existing = mod_data.setdefault(name, {})
         existing["category"] = entry.category
         existing["tier"] = entry.tier
-        # Seed priority ONLY for a mod that doesn't have one yet. Priority is
-        # user-owned state once assigned -- set here on first sight, or later
-        # overridden via the web UI (server.py's PUT /mods/<name>) or the CLI
-        # (main.py) -- and must never be reset back to its static catalog
-        # position on a routine apply(). server.py's /mods GET handler
-        # already enforced this; apply() did not, which meant any manual
-        # re-priority a user made was silently discarded the next time
-        # apply() ran (e.g. from the scheduled automation job), with no
-        # warning that it had happened.
+        # Seed priority ONLY for a mod that doesn't have one yet (defensive
+        # backfill -- sync_with_installed() above already does this for the
+        # normal case). Priority is user-owned state once assigned -- set on
+        # first sight, or later overridden via the web UI (server.py's PUT
+        # /mods/<name>) or the CLI (main.py) -- and must never be reset back
+        # to its static catalog position on a routine apply(). server.py's
+        # /mods GET handler already enforced this; apply() did not, which
+        # meant any manual re-priority a user made was silently discarded
+        # the next time apply() ran (e.g. from the scheduled automation
+        # job), with no warning that it had happened.
         if "priority" not in existing:
             existing["priority"] = entry.order
-            seeded.append(name)
         existing["enabled"] = enabled.get(name, True)
 
-    if seeded:
+    if newly_seen:
         report.add(
-            f"Assigned catalog priority to {len(seeded)} newly-seen mod(s): "
-            + ", ".join(sorted(seeded))
+            f"Assigned catalog priority to {len(newly_seen)} newly-seen mod(s): "
+            + ", ".join(newly_seen)
         )
 
     # The sequence actually written to MO2 must reflect each mod's live

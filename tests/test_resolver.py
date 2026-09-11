@@ -1,6 +1,6 @@
 from helpers import make_mod_folder
 
-from mod_manager.core import actions, config, mod_data_store, resolver
+from mod_manager.core import actions, catalog, config, mod_data_store, resolver
 
 
 def _setup_aaf_fixture(mods_path):
@@ -150,3 +150,55 @@ def test_apply_writes_modlist_with_backup(patch_config):
     second_report = resolver.apply(dry_run=False)
     assert second_report.modlist_backup is not None
     assert second_report.modlist_backup.exists()
+
+
+def test_apply_preserves_manual_priority_override(patch_config):
+    # Regression test for the priority-clobbering bug: apply() used to
+    # unconditionally overwrite every installed mod's priority from its
+    # static catalog position on every single call, so a manual re-priority
+    # made through the web UI (PUT /mods/<name>) or main.py's CLI was
+    # silently discarded the next time apply() ran -- including from the
+    # scheduled automation job, with no warning it had happened.
+    make_mod_folder(patch_config.mods, "Buffout 4")
+    make_mod_folder(patch_config.mods, "Scrap scrap 1.1")
+
+    resolver.apply(dry_run=False)  # first run: seeds catalog priorities
+
+    mod_data = mod_data_store.load(config.MOD_DATA_PATH)
+    assert mod_data["Buffout 4"]["priority"] == catalog.order_index("Buffout 4")
+
+    # Simulate a manual re-priority via the web UI: force Buffout 4 above
+    # everything, including mods later in the static catalog order.
+    mod_data["Buffout 4"]["priority"] = 999999
+    mod_data_store.save(mod_data, config.MOD_DATA_PATH)
+
+    resolver.apply(dry_run=False)  # second run must NOT reset it
+
+    mod_data = mod_data_store.load(config.MOD_DATA_PATH)
+    assert mod_data["Buffout 4"]["priority"] == 999999
+
+    # And it must actually take effect in the written modlist.txt, not just
+    # sit unused in mod_data.json -- highest priority is written first.
+    lines = config.MO2_MODLIST.read_text(encoding="utf-8").splitlines()
+    mod_lines = [line[1:] for line in lines if line[:1] in ("+", "-")]
+    assert mod_lines[0] == "Buffout 4"
+
+
+def test_apply_still_seeds_priority_for_a_newly_added_mod(patch_config):
+    make_mod_folder(patch_config.mods, "Buffout 4")
+    resolver.apply(dry_run=False)
+
+    mod_data = mod_data_store.load(config.MOD_DATA_PATH)
+    original_buffout_priority = mod_data["Buffout 4"]["priority"]
+
+    # A second mod appears later (freshly installed in MO2 between runs).
+    # It must still be seeded from the catalog on the next apply(), without
+    # disturbing Buffout 4's already-assigned priority.
+    make_mod_folder(patch_config.mods, "Unofficial Fallout 4 Patch")
+    resolver.apply(dry_run=False)
+
+    mod_data = mod_data_store.load(config.MOD_DATA_PATH)
+    assert mod_data["Buffout 4"]["priority"] == original_buffout_priority
+    assert mod_data["Unofficial Fallout 4 Patch"]["priority"] == catalog.order_index(
+        "Unofficial Fallout 4 Patch"
+    )

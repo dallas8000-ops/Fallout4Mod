@@ -79,17 +79,45 @@ def apply(
     report.mod_data_changed = changed
 
     entries = catalog.build_catalog(installed)
-    ordered = [e.name for e in entries]
+    catalog_order = [e.name for e in entries]
 
     prior_state = loadorder_io.read_enabled_state(modlist_path)
-    enabled = compute_enabled_state(ordered, mod_data, prior_state)
+    enabled = compute_enabled_state(catalog_order, mod_data, prior_state)
 
-    for name, entry in zip(ordered, entries):
-        mod_data.setdefault(name, {})
-        mod_data[name]["category"] = entry.category
-        mod_data[name]["tier"] = entry.tier
-        mod_data[name]["priority"] = entry.order
-        mod_data[name]["enabled"] = enabled.get(name, True)
+    seeded: list[str] = []
+    for name, entry in zip(catalog_order, entries):
+        existing = mod_data.setdefault(name, {})
+        existing["category"] = entry.category
+        existing["tier"] = entry.tier
+        # Seed priority ONLY for a mod that doesn't have one yet. Priority is
+        # user-owned state once assigned -- set here on first sight, or later
+        # overridden via the web UI (server.py's PUT /mods/<name>) or the CLI
+        # (main.py) -- and must never be reset back to its static catalog
+        # position on a routine apply(). server.py's /mods GET handler
+        # already enforced this; apply() did not, which meant any manual
+        # re-priority a user made was silently discarded the next time
+        # apply() ran (e.g. from the scheduled automation job), with no
+        # warning that it had happened.
+        if "priority" not in existing:
+            existing["priority"] = entry.order
+            seeded.append(name)
+        existing["enabled"] = enabled.get(name, True)
+
+    if seeded:
+        report.add(
+            f"Assigned catalog priority to {len(seeded)} newly-seen mod(s): "
+            + ", ".join(sorted(seeded))
+        )
+
+    # The sequence actually written to MO2 must reflect each mod's live
+    # priority -- including any manual override -- not the static catalog
+    # order computed above; otherwise a user's re-prioritization is silently
+    # reverted the next time this runs. Falls back to catalog order only for
+    # a mod that somehow still has none (shouldn't happen after the loop
+    # above), so the sort stays total and deterministic either way.
+    ordered = sorted(
+        catalog_order, key=lambda n: (mod_data[n].get("priority", catalog.order_index(n)), n)
+    )
 
     if dry_run:
         report.add(f"[dry-run] Would write {len(ordered)} mods to {modlist_path}")
